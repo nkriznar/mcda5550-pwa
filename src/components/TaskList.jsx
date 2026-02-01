@@ -1,37 +1,58 @@
 // src/components/TaskList.jsx
+import { motion, AnimatePresence } from 'framer-motion';
 
-function TaskList({ tasks, onDeleteTask }) {
+function TaskList({ tasks, onDeleteTask, onCancelTask }) {
 
-    // Helper to determine color based on deadline rubric 
     const getDeadlineClass = (deadlineDate) => {
+        // ... (Keep your existing logic here, copy from previous version) ...
+        // Just re-pasting the logic for safety:
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // Normalize to midnight
+        today.setHours(0, 0, 0, 0);
         const due = new Date(deadlineDate);
-
-        // Calculate difference in days
         const diffTime = due - today;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-        if (diffDays < 0) return 'deadline-passed'; // Red 
-        if (diffDays < 3) return 'deadline-soon';   // Orange 
-        if (diffDays <= 7) return 'deadline-week';  // Yellow 
-        return 'deadline-ok'; // Normal
+        if (diffDays < 0) return 'deadline-passed';
+        if (diffDays < 3) return 'deadline-soon';
+        if (diffDays <= 7) return 'deadline-week';
+        return 'deadline-ok';
     };
 
     return (
         <div className="task-list">
-            <h3>To-Do List</h3>
-            {tasks.length === 0 && <p>No tasks yet.</p>}
+            <h3 style={{ color: 'white' }}>To-Do List</h3>
 
-            {tasks.map(task => (
-                <div key={task.id} className={`task-card ${getDeadlineClass(task.deadline)}`}>
-                    <div className="task-info">
-                        <strong>{task.text}</strong>
-                        <span>Due: {task.deadline}</span>
-                    </div>
-                    <button onClick={() => onDeleteTask(task.id)}>Delete</button>
-                </div>
-            ))}
+            {/* Wrapper for animations */}
+            <AnimatePresence>
+                {tasks.map(task => (
+                    <motion.div
+                        key={task.id}
+                        className={`task-card ${getDeadlineClass(task.deadline)}`}
+
+                        // Animation Settings
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, x: -100 }}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <div className="task-info">
+                            <strong>{task.text}</strong>
+                            <span>Due: {task.deadline}</span>
+                        </div>
+
+                        <div className="task-buttons">
+                            <button className="btn-done" onClick={() => onDeleteTask(task.id)}>
+                                Done ✓
+                            </button>
+                            <button className="btn-cancel" onClick={() => onCancelTask(task.id)}>
+                                Cancel ✗
+                            </button>
+                        </div>
+                    </motion.div>
+                ))}
+            </AnimatePresence>
+
+            {tasks.length === 0 && <p style={{ color: 'white', textAlign: 'center' }}>No tasks yet. Relax!</p>}
         </div>
     );
 }
